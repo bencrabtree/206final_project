@@ -1,8 +1,17 @@
-### Ben Crabtree, SI 206 Final Project ###
+#################################################################
+############### Ben Crabtree, SI 206 Final Project ##############
+#################################################################
+
 # USING: Facebook, Instagram
 import info
 import unittest, sqlite3, json, requests, datetime, calendar, csv, facebook, instagram
 from pprint import pprint
+
+#################################################################
+#################################################################
+################## FACEBOOK DATA COLLECTION #####################
+#################################################################
+#################################################################
 
 CACHE_FNAME = "fb_cache.json"
 try:
@@ -143,13 +152,20 @@ def write_sql_csv_fb(facebook_data):
 
     cur.close()
 
+#################################################################
+########### FACEBOOK DATA COLLECTION FUNCTION CALLS #############
+#################################################################
+
 data = get_fb_data(info.fb_access_token)
 write_sql_csv_fb(data)
 avgs = get_weekly_results(data)
 write_averages(avgs)
 
-
-####### INSTAGRAM DATA COLLECTION #######
+#################################################################
+#################################################################
+################### INSTAGRAM DATA COLLECTION ###################
+#################################################################
+#################################################################
 
 # Set up Instgram cache file
 CACHE_FNAME = "ig_cache.json"
@@ -244,6 +260,10 @@ def write_sql_csv_ig(weekly_data):
        data.writerows(row)
 
    cur.close()
+
+#################################################################
+######## INSTAGRAM DATA COLLECTION FUNCTION CALLS ##############
+#################################################################
 
 data_list = get_instagram_data(info.ig_access_token)
 weekly = get_ig_weekly_results(data_list)

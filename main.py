@@ -6,6 +6,8 @@
 import info
 import unittest, sqlite3, json, requests, datetime, calendar, csv, facebook, instagram
 from pprint import pprint
+import plotly.plotly as py
+import plotly.graph_objs as go
 
 #################################################################
 #################################################################
@@ -122,12 +124,6 @@ def write_averages(averages_dict):
         cur.execute('INSERT INTO Facebook_Averages (Weekday, AvgLikes, AvgTags) VALUES (?,?,?)', tup)
         conn.commit()
 
-    cur.execute('SELECT * FROM Facebook_Averages')
-    row = cur.fetchall()
-    with open("facebook_averages.csv", 'w', newline='') as fp:
-        data = csv.writer(fp, delimiter=',')
-        data.writerows(row)
-
     cur.close()
 
 # EFFECTS: takes in a dictionary of data and writes it to sql file and csv
@@ -143,13 +139,6 @@ def write_sql_csv_fb(facebook_data):
         cur.execute('INSERT INTO Facebook_Data (Weekday, Num_Tags, Num_Likes) VALUES (?,?,?)', tup)
         conn.commit()
 
-    cur.execute('SELECT * FROM Facebook_Data')
-    # i used csv.writer to easily write my data from sql to csv file
-    row = cur.fetchall()
-    with open("facebook_data.csv", 'w', newline='') as fp:
-        data = csv.writer(fp, delimiter=',')
-        data.writerows(row)
-
     cur.close()
 
 #################################################################
@@ -158,8 +147,8 @@ def write_sql_csv_fb(facebook_data):
 
 data = get_fb_data(info.fb_access_token)
 write_sql_csv_fb(data)
-avgs = get_weekly_results(data)
-write_averages(avgs)
+fb_avgs = get_weekly_results(data)
+write_averages(fb_avgs)
 
 #################################################################
 #################################################################
@@ -252,19 +241,60 @@ def write_sql_csv_ig(weekly_data):
    cur.execute('INSERT INTO Insta_AvgLikes (user_id, Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday) VALUES (?,?,?,?,?,?,?,?)', tup)
    conn.commit()
 
-   cur.execute('SELECT * FROM Insta_AvgLikes')
-
-   row = cur.fetchall()
-   with open("instagram_data.csv", 'w', newline='') as fp:
-       data = csv.writer(fp, delimiter=',')
-       data.writerows(row)
-
    cur.close()
 
 #################################################################
-######## INSTAGRAM DATA COLLECTION FUNCTION CALLS ##############
+######### INSTAGRAM DATA COLLECTION FUNCTION CALLS ##############
 #################################################################
 
 data_list = get_instagram_data(info.ig_access_token)
 weekly = get_ig_weekly_results(data_list)
 write_sql_csv_ig(weekly)
+
+#################################################################
+#################################################################
+###################### VISUALIZATIONS ###########################
+#################################################################
+#################################################################
+
+
+#################################################################
+#################### fb visualization ###########################
+#################################################################
+py.sign_in('bencrabtree', '2pip9D4sd2wnkyVbTWNY')
+fb_avglikes = []
+fb_avgtags = []
+days = []
+
+for day in fb_avgs:
+    fb_avglikes.append(fb_avgs[day][1])
+    fb_avgtags.append(fb_avgs[day][0])
+    days.append(day)
+
+data1 = go.Bar(x = days, y = fb_avglikes, name = "Average Likes Per Post")
+data2 = go.Bar(x = days, y = fb_avgtags, name = "Average Tags Per Post")
+
+layout = go.Layout(title = "Average Amount of Facebook Likes and Tags Given Day of the Week", barmode = 'group', xaxis = dict(title = 'Day of the Week'), yaxis = dict(title = "Average Number"))
+data = [data1, data2]
+figure = go.Figure(data=data,layout=layout)
+
+py.iplot(figure, filename="Crabtree FB Bargraph Visualization")
+print("plotly1 finished")
+
+#################################################################
+######################## insta visualization ####################
+#################################################################
+weeklyData = []
+weekdays = []
+for day in weekly:
+    if (len(weekdays) < 7):
+        weeklyData.append(weekly[day])
+        weekdays.append(day)
+
+data = [go.Bar(x = weekdays, y = weeklyData)]
+
+layout = go.Layout(title = "Average Amount of Instagram Likes Gives Day of the Week", xaxis = dict(title = 'Day of the Week'), yaxis = dict(title = "Average Likes"))
+figure = go.Figure(data=data,layout=layout)
+
+py.iplot(figure, filename="Crabtree INSTA Bargraph Visualization")
+print("ployly2 finished")
